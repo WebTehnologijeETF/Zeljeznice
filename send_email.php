@@ -13,8 +13,12 @@
         ->setSubject("Sending with SendGrid is Fun")
         ->setHtml("and easy to do anywhere, even with PHP");
 
-  $sendgrid->send($email);
- 
+
+  if($sendgrid->send($email))
+    echo "poslao si mail";
+  else
+    echo "nisi poslao mail";
+echo"blaaa"; 
 /*
   $name = $_POST['firstname'];
   $visitor_email = $_POST['email'];
