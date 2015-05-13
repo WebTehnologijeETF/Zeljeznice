@@ -13,9 +13,10 @@
         ->setSubject("Sending with SendGrid is Fun")
         ->setHtml("and easy to do anywhere, even with PHP");
 
-
-
   echo"blaaa"; 
+  $sendgrid->send($email);
+
+
 /*
   $name = $_POST['firstname'];
   $visitor_email = $_POST['email'];
