@@ -11,10 +11,12 @@
   $email->addTo("adurakovic4@etf.unsa.ba")
         ->setFrom("adna.durakovic11@gmail.com")
         ->setSubject("Sending with SendGrid is Fun")
-        ->setHtml("and easy to do anywhere, even with PHP");
+        ->setText('Hi I have sent you a mail!')
+        ->setHtml('<strong>and easy to do anywhere, even with PHP</strong>');
+        
 
-  echo"blaaa"; 
-  $sendgrid->send($email);
+  $response=$sendgrid->send($email);
+  print_r($response);
 
 
 /*
