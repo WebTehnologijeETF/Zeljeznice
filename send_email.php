@@ -14,11 +14,8 @@
         ->setHtml("and easy to do anywhere, even with PHP");
 
 
-  if($sendgrid->send($email))
-    echo "poslao si mail";
-  else
-    echo "nisi poslao mail";
-echo"blaaa"; 
+
+  echo"blaaa"; 
 /*
   $name = $_POST['firstname'];
   $visitor_email = $_POST['email'];
