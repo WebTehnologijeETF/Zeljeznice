@@ -41,11 +41,11 @@
 
 if (mail($to,$subject,$message,$headers))
 {
-  echo "Email sent";
+  echo "Zahvaljujemo se što ste nas kontaktirali.";
 } 
 else
 {
-  echo "Email not sent.";
+  echo "Email nije poslan.";
 }
 
 
