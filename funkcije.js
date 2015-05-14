@@ -315,7 +315,7 @@ function funkcijaHome() {
                 if (ajax.readyState == 4 && ajax.status == 404)
                         document.getElementById("tijelo").innerHTML = "Greska: nepoznat URL";
         }
-    ajax.open("GET", "home.html", true);
+    ajax.open("GET", "index.php", true);
     ajax.send();
 }
 

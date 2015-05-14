@@ -83,7 +83,7 @@ body {
 
 .article {
     display: inline-block;
-    width: 49%;
+    width: 100%;
     margin: 5px;
 }
 
@@ -96,6 +96,8 @@ body {
 
 .article-pic {
     border: 3px solid lightgrey;
+    height: 256px;
+    width: 256px;
 }
 
 .article h2 {
