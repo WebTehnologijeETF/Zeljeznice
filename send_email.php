@@ -4,7 +4,7 @@
   $visitor_email = $_POST['email'];
   $message = $_POST['myname'];
 
-  require("sendgrid-php/sendgrid-php.php");
+  require("C:\sendgrid-php/sendgrid-php.php");
 
   $service_plan_id = "sendgrid_e3f7b";
   $account_info = json_decode(getenv($service_plan_id), true);
@@ -17,6 +17,7 @@
 
   $sendgrid->send($email);
   echo '<script>alert("Zahvaljujemo se što ste nas kontaktirali.")</script>';
+  header( 'refresh: 2; index.html' );
 
 /*
 header('Content-Type: text/html; charset=utf-8');
