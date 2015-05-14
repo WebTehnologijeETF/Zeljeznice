@@ -126,6 +126,11 @@
             }
         }
 
+        if (isset($_POST["reset"]))
+        {
+            $firstname = $email = $emailpotvrda = $poruka = $mjesto = $ptbroj = $predmet = "";
+        }
+
 
         function testiraj_unos($data) 
         {

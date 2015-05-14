@@ -47,5 +47,9 @@
     <p id = "button-submit">
         <button name="send" type="submit" value="Submit">Pošalji</button>
     </p>
+
+    <p id= "button-reset">
+        <button name="reset" type="reset" value="Reset">Resetuj</button>
+    </p>
 </form>
 
