@@ -74,9 +74,8 @@
    // Send the message
    $mail = $smtp->send($recipient, $headers, $body);
   
-  if (PEAR::isError($mail)) {
-      echo '<script>alert("'.$mail->getMessage().'")</script>';
-      header( 'refresh: 0; index.php' );
+   if (PEAR::isError($mail)) {
+    echo ($mail->getMessage());
    }
    else
    {
