@@ -14,6 +14,7 @@
 
     <div class="menu">
             <a class="logo" href="#" onClick = "funkcijaHome()"><img src="slike/logo.png" alt="Logo">SoulTrain</a>
+            <a class="logo" href="index.php"><img src="slike/logo.png" alt="Logo">SoulTrain</a>
             <ul>
                 <li><a href="#" onClick = "funkcijaHome()">NASLOVNA</a></li>
                 <li><a href="#" onClick = "funkcijaNews()">VIJESTI</a></li>
@@ -25,33 +26,17 @@
     </div>
 
     <?php 
-        include 'contact_validation.php'
+        include 'admin_panel_validation.php'
     ?>
 
     <div id = "tijelo">
     <body>   
         <div class="content">  
-            <p>Kontakt</p>
-            
-            <div class="address">
-                <h1>Adresa</h1>
-                <h2>San Guadalupe Office<br>
-                    SoulTrain<br>
-                    500 Terry Francois St.<br>
-                    San Guadalupe, CA 88541</h2>
-                <img src="slike/mapa.jpg" alt="Mapa">
-            </div>
-
-            <div class="telephone">
-                <h1>Telefon</h1>
-                <h2>061 000 008</h2>
-                <br>
                 
                 <?php 
-                    include $show_form;
+                    include $prikaz;
                 ?>             
 
-            </div>
         </div>
     </body>
 </div>

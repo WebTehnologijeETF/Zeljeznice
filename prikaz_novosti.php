@@ -1,112 +1,145 @@
 <?php
-	$vijest = array();
-	$broj_vijesti = 0;
-	$vijesti = array();
-	$datumi = array();
+	 header('Content-Type: text/html; charset=utf-8');
 
-	function compare($f1, $f2)
-  	{
-    	$f1Lines = file($f1, FILE_IGNORE_NEW_LINES);
-    	$f2Lines = file($f2, FILE_IGNORE_NEW_LINES);
-    	$d1 = $f1Lines[0];
-    	$d2 = $f2Lines[0];
-    	if ($d1 == $d2) 
-      		return 0;
-    	return (strtotime($d1) < strtotime($d2)) ? 1 : -1;
-  	}
+	 $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
+     $veza->exec("set names utf8");
+     
+     $rezultat = $veza->query("SELECT id, naslov, autor, slika, tekst, UNIX_TIMESTAMP(datum) vrijeme, detaljno FROM vijest ORDER BY datum DESC");
+	 if (!$rezultat) {
+          $greska = $veza->errorInfo();
+          print "SQL greška: " . $greska[2];
+          exit();
+     }
+	
+    $novost = array();
+	$komentari = array();
 
-  	// prvo sortiramo sve fajlove
-  	$allFiles = array();
-    foreach (glob("novosti/*.txt") as $file)
+    foreach ($rezultat as $vijest) 
     {
-      array_push($allFiles, $file);
+     	//  pokupi broj komentara
+    	$sql = $veza->query("SELECT COUNT(*) FROM komentar WHERE vijest=".$vijest['id']);
+    	$br_komentara = $sql->fetchColumn();
+    	if($br_komentara[0] == 0)
+    		$broj_komentara = '<a class="comment" onclick="showDiv('.$vijest['id'].')" href="#?vid='.$vijest['id'].'">Nema komentara</a>';
+    	else
+    		$broj_komentara = '<a class="comment" onclick="showDiv('.$vijest['id'].')" href="#?vid='.$vijest['id'].'">Ima '.$br_komentara.' komentara</a>';
+
+    	//  ako novost ima/nema sliku
+    	if($vijest['slika'] == null)
+    		$slika = '';
+    	else
+    		$slika = '<img class = "article-pic" src="getImage.php?id='.$vijest['id'].'" alt="neka slika">';
+
+    	//  ako novost ima/nema detaljno
+    	if($vijest['detaljno'] == null)
+    		$detaljno = '';
+    	else
+    		$detaljno = '<a class="read-more" href="?vijestBr='.$vijest['id'].'">DETALJNIJE...</a>';
+
+
+     	$jedna_novost = '<div class="article"><h1>'.$vijest['naslov'].'</h1>
+                  		<h2><strong>autor : </strong>'.$vijest['autor'].', <strong>Objavljeno : </strong>'.date("d.m.Y. (h:i)", $vijest['vrijeme']).'</h2>
+                  		'.$slika.'<p>'.$vijest['tekst'].'<br><br>'.$detaljno.''.$broj_komentara.'</p></div>';
+        
+
+
+          
+
+        $sql = $veza->query("SELECT * FROM komentar WHERE vijest=".$vijest['id']." ORDER BY datum DESC");
+
+        if ($br_komentara != 0)
+        array_push($komentari, '<div class="comments"><h3>Komentari</h3></div>');
+
+	    foreach ($sql as $komentar) 
+	    {
+	    	if ($komentar['email'] == null)
+	    		$email = '"#"';
+	    	else
+	    		$email = '"mailto:'.$komentar['email'].'"';
+
+	      	$jedan_komentar = '<div class="comments">
+		      				    <p id="kom">
+		      				      <strong><a href='.$email.'>'.$komentar['autor'].'</a></strong><br>
+			    				  <small id="kom_datum">'.$komentar['datum'].'</small><br><br>
+			      				  <small>'.$komentar['tekst'].'</small>
+		      				    </p>
+	       				      </div>';
+	       	array_push($komentari, $jedan_komentar);
+	    }
+
+	    $forma = '<div id = "komDiv'.$vijest['id'].'" class = "komentar_forma">
+        			<form action="index.php" method="post">
+        				<input type="hidden" name="date" value="'.date("Y-m-d H:i:s").'">
+        				<input type="hidden" name="pk" value="'.$vijest['id'].'">
+                		<br><input type="text" name="aut" placeholder="Ime i prezime"><br>
+                		<br><input type="text" name="mail" placeholder="E-mail (opcionalno)"><br>
+                		<br><textarea rows="5" cols="50" name="kom" placeholder="Komentar"></textarea><br>
+                		<input type="submit" name="Submit1" value="Komentariši">
+              	  	</form>
+              	  	<br>
+              	  	'.implode('',$komentari).'
+              	  </div>';
+
+
+        array_push($novost, $jedna_novost );
+        array_push($novost, $forma);
+        $komentari = array();
     }
-    usort($allFiles, "compare");
 
-    // a zatim ih otvara
-	foreach ($allFiles as $file)
+   
+
+    // ako je neko kliknuo "Detaljnije..."
+	if(isset($_GET['vijestBr'])) 
 	{
-		$handle = fopen($file, "r");
-		if ($handle) 
-		{
-			$brojac=0;
-			$sadrzaj="";
+		$novost = array();
+		$vijest_sql =  $veza->query("SELECT * FROM vijest WHERE id=".$_GET['vijestBr']);
+		foreach ($vijest_sql as $vijest) 
+   		{
+   			$slika = '<img class = "article-pic" src="getImage.php?id='.$vijest['id'].'" alt="neka slika">';
+   			
+   			$jedna_novost = '<div class="article"><h1>'.$vijest['naslov'].'</h1>
+                 			<h2><strong>autor : </strong>'.$vijest['autor'].', <strong>Objavljeno : </strong>'.date("d.m.Y. (h:i)", $vijest['vrijeme']).'</h2>
+                 		   	'.$slika.'<p>'.$vijest['tekst'].'<br>'.$vijest['detaljno'].'</p><br></div>';
 
-			while (($buffer = fgets($handle, 1024)) !== false) 
-			{
-				if ($brojac==0)
-				{
-					$datum =$buffer;
-				}
-				if ($brojac==1)
-				{
-					$autor =$buffer;
-				}
-				if ($brojac==2)
-				{
-					$naslov =$buffer;
-				}
-				if ($brojac==3)
-				{
-					$slika='';
-					if(trim($buffer)=='')
-						$slika="";
-					else 
-						$slika = '<img class = "article-pic" src="'.$buffer.'" alt="neka slika">';
-				}
-				if ($brojac > 3 and trim($buffer) != "--")
-				{
-					$sadrzaj = $sadrzaj.$buffer;
-				}
-				if (trim($buffer) == "--")
-				{
-					$detaljno='';
-					while (($buffer = fgets($handle, 1024)) !== false) 
-					{
-						$detaljno=$detaljno.$buffer;
-					}
+            array_push($novost, $jedna_novost );
+   		}
+	}
 
-					$_detaljno = '';
-					if($detaljno != '') 
-						$_detaljno = '<a class="read-more" href="?add='.$broj_vijesti.'">DETALJNIJE...</a>';
-					else $_detaljno = '';
-					break;
-				}
-				$brojac = $brojac + 1;
-			}
+	function testiraj_unos($podaci) 
+    {
+        $podaci = trim($podaci); // uklanja bespotrebne razmake i prazna polja
+        $podaci = stripslashes($podaci); // uklanja backslahs-ove
+        $podaci = htmlspecialchars($podaci); // sprečava XSS
+        return $podaci;
+    } 
 
-			$broj_vijesti = $broj_vijesti + 1;
+    $autor = $email = $komentar_tekst = $datum = "";
 
-			array_push($datumi, $datum);
+	if(isset( $_POST['Submit1']))
+	{
+		$autor = testiraj_unos($_POST['aut']);
+		$email = testiraj_unos($_POST['mail']);
+		$komentar_tekst = testiraj_unos($_POST['kom']);
 
-			// ovo je za prikazivanje vijesti kao SPA
-			$pojedinacna_vijest = '<div class="article"><h1>'.ucfirst(strtolower($naslov)).'</h1>
-                  				   <h2><strong>autor : </strong>'.$autor.', <strong>Objavljeno : </strong>'.$datum.'</h2>
-                  				   '.$slika.'<p>'.$sadrzaj.'<br>'.$detaljno.'</p><br></div>';
+	    $pk = $_POST['pk'];
 
+	    $rez = $veza->prepare("INSERT INTO komentar (autor, tekst, email, vijest) VALUES (:autor, :komentar_tekst, :email, :pk)");
+	    $rez->execute(array(':autor'=>$autor,
+                            ':komentar_tekst'=>$komentar_tekst,
+                            ':email'=>$email,
+                            ':pk'=>$pk));
 
-            array_push($vijesti, $pojedinacna_vijest);
+	    //$rez = $veza->query("INSERT INTO komentar(autor, tekst, email, vijest) VALUES ('".$autor."', '".$komentar_tekst."', '".$email."', '".$pk."')");
+	    if (!$rez) {
+	    	$greska = $veza->errorInfo();
+	    	echo '<script language="javascript">';
+			echo 'alert("'.$greska[2].'")';
+			echo '</script>';
+          exit();
+     	}
 
-            // ovo je za prikazivanje svih vijesti
-			$jedna_vijest= '<div class="article"><h1>'.ucfirst(strtolower($naslov)).'</h1>
-                  			<h2><strong>autor : </strong>'.$autor.', <strong>Objavljeno : </strong>'.$datum.'</h2>
-                  		   '.$slika.'<p>'.$sadrzaj.'</p>'.$_detaljno.'<br></div>';
+     	header('Location: index.php'); // očisti POST
+	}
 
-            array_push($vijest, $jedna_vijest);
-
-            // ako je neko kliknuo "Detaljnije..."
-			if(isset($_GET['add'])) 
-			{
-				if($_GET['add'] <= ($broj_vijesti - 1))
-				{
-					$vijest = array();
-    				array_push($vijest, $vijesti[$_GET['add']]);
-				}	
-			}
-
-		}
-
-		fclose($handle);
-	}	
 ?>
 

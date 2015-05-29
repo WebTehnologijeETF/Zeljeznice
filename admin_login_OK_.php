@@ -22,29 +22,21 @@
             <li><a href="#" onClick = "funkcijaAdminPanel()">LOG IN</a><li>
         </ul>
     </div>
-    
 
+    <?php include 'admin_login_OK.php'; ?>
     <div id= "tijelo">   
         <body>
-            <?php
-                include 'prikaz_novosti.php'
-            ?>
-
             <div class="content">
-                <img id="home-pic" src="slike/slika2.jpg" alt="Slika naslovnice">
-                    <div class="article">
-                        
-                        <?php 
-                            foreach($novost as $value){ 
-                                echo $value;    
-                            ?>  <br />
-                            <?php
-                            }
-
-                        ?> 
-
-                    </div>    
-            </div>    
+                <p>Dobrodošli!</p>
+            	<?php /*
+                 foreach($bla as $value){ 
+                    echo $value;    
+                    ?>  <br />
+                    <?php
+                    }*/
+                    echo $bla;
+                ?>    
+    		</div>
         </body>
     </div>
 

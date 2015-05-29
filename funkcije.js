@@ -366,3 +366,23 @@ function funkcijaAbout() {
     ajax.open("GET", "about.html", true);
     ajax.send();
 }
+
+function funkcijaAdminPanel() {
+		var ajax = new XMLHttpRequest();
+        ajax.onreadystatechange = function() {// Anonimna funkcija
+                if (ajax.readyState == 4 && ajax.status == 200)
+                        document.getElementById("tijelo").innerHTML = ajax.responseText;
+                if (ajax.readyState == 4 && ajax.status == 404)
+                        document.getElementById("tijelo").innerHTML = "Greska: nepoznat URL";
+        }
+    ajax.open("GET", "admin_panel.html", true);
+    ajax.send();
+}
+
+function showDiv(br_diva) 
+    {
+        if (document.getElementById("komDiv"+br_diva.toString()).style.display == 'block') 
+            document.getElementById("komDiv"+br_diva.toString()).style.display = 'none';
+        else 
+            document.getElementById("komDiv"+br_diva.toString()).style.display = 'block';
+    }
