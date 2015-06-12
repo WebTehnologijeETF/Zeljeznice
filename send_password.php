@@ -1,5 +1,3 @@
-<?php include 'admin_panel_validation.php'; ?>
-
 <?php
 
   try 
@@ -21,22 +19,6 @@
   $update_pass_prepared->execute(array(':new_pass'=> $new_pass,
                                        ':usermail'=> $usr_mail
                                       ));
-
-  
-       /*                                   
-  require("sendgrid-php/sendgrid-php.php");
-
-  $service_plan_id = "sendgrid_e3f7b";
-  $account_info = json_decode(getenv($service_plan_id), true);
-
-  $sendgrid = new SendGrid("aadurakovic4285", "1DvaTri!");
-  $email = new SendGrid\Email();
-  $email->addTo($usr_mail)->addCc("adurakovic4@etf.unsa.ba")->setFrom("adurakovic4@etf.unsa.ba")->setSubject("Novi Password")->setText($new_pass);
-  $sendgrid->send($email);
-
-  echo '<script>alert("Novi password je poslan na Vaš email.")</script>';
-  header( 'refresh: 0; index.php' );
-  */
  
 
   require "Mail/Mail.php";

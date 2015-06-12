@@ -15,7 +15,6 @@
         <a class="logo" href="#" onClick = "funkcijaHome()"><img src="slike/logo.png" alt="Logo">SoulTrain</a>
         <ul>
             <li><a href="#" onClick = "funkcijaHome()">NASLOVNA</a></li>
-            <li><a href="#" onClick = "funkcijaNews()">VIJESTI</a></li>
             <li><a href="#" onClick = "funkcijaRoutes()">VOZNI RED</a></li>
             <li><a href="#" onClick = "funkcijaContact()">KONTAKT</a></li>
             <li><a href="#" onClick = "funkcijaAbout()">O NAMA</a></li>

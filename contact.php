@@ -14,13 +14,18 @@
 
     <div class="menu">
             <a class="logo" href="#" onClick = "funkcijaHome()"><img src="slike/logo.png" alt="Logo">SoulTrain</a>
+            <div id="login">
+              <form action="index.php" method="get" onsubmit="Login(this)">
+                <input id="user_name" type="text" placeholder="Username">
+                <input id="user_pass" type="text" placeholder="Password">
+                <input type="submit" id="login_button" name="userlogin" value="Log In">
+              </form>
+            </div>
             <ul>
                 <li><a href="#" onClick = "funkcijaHome()">NASLOVNA</a></li>
-                <li><a href="#" onClick = "funkcijaNews()">VIJESTI</a></li>
                 <li><a href="#" onClick = "funkcijaRoutes()">VOZNI RED</a></li>
                 <li><a href="#" onClick = "funkcijaContact()">KONTAKT</a></li>
                 <li><a href="#" onClick = "funkcijaAbout()">O NAMA</a></li>
-                <li><a href="#" onClick = "funkcijaAdminPanel()">LOG IN</a><li>
             </ul>
     </div>
 
