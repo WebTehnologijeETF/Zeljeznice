@@ -1,4 +1,3 @@
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
 <html>
@@ -101,81 +100,106 @@
 
 
     </div>
-    
 
-    <div id= "tijelo">   
-        <body onload="updateTime();">
-            <div class="content">
-                <img id="home-pic" src="slike/slika2.jpg" alt="Slika naslovnice">
-                    <div class="article">
-                        <?php
-                            header('Content-Type: text/html; charset=utf-8');
+<div id = "tijelo">
+    <body>   
+        <div class="content">  
+               
 
-                            $veza = new PDO("mysql:dbname=zeljeznicesoultrain;host=127.6.189.2;charset=utf8", "adminnlc33pY", "RHuwlgvvVQat");
-                            $veza->exec("set names utf8");
-                             
-                              $rezultat = $veza->query("SELECT id, naslov, autor, slika, tekst, UNIX_TIMESTAMP(datum) vrijeme, detaljno FROM vijest ORDER BY datum DESC");
-                                if (!$rezultat) {
-                                     $greska = $veza->errorInfo();
-                                     print "SQL greška: " . $greska[2];
-                                     exit();
-                              }
+                <?php
+                    if(isset($_POST["resetPass"]))  
+                    {
+                      
+                      $poruka_greske = $username_err_img = "";
 
-                            foreach ($rezultat as $vijest) 
-                            {
-                                if($vijest['slika'] == null)
-                                  $slika = '';
-                                else
-                                  $slika = '<img class = "article-pic" src="getImage.php?id='.$vijest['id'].'" alt="neka slika">';
-                                  //  ako novost ima/nema detaljno
-                                if($vijest['detaljno'] == null)
-                                  $detaljno = '';
-                                else
-                                  $detaljno = '<a id="detaljnoTekst'.$vijest['id'].'" class="read-more" href="javascript:void(0)" onclick="showMore('.$vijest['id'].')">DETALJNIJE...</a>';
+                      $novi_pass = testiraj_unos($_POST["noviPass"]);
+                      if($novi_pass == "")
+                      {
+                        $poruka_greske = "Unesite novi password";
+                        $username_err_img = '<img src="https://cdn3.iconfinder.com/data/icons/freeapplication/png/24x24/Danger.png" alt="greska" height="15" width="15">';
+                      }
+                      else
+                      {
+                        session_start();
+                        try 
+                        {
+                          $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
+                          $veza->exec("set names utf8");
+                        }
+                        catch (PDOException $ex)
+                        {
+                          die('Greška kod povezivanja s bazom');
+                        }
 
-                                //  pokupi broj komentara
-                                $sql = $veza->query("SELECT COUNT(*) FROM komentar WHERE vijest=".$vijest['id']);
-                                $br_komentara = $sql->fetchColumn();
+                        $username = testiraj_unos($_POST["noviPassusr"]);
+                        $korisnik_query = "SELECT email FROM admin WHERE username = :username";
+                        $korisnik_prepared = $veza->prepare($korisnik_query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+                        $korisnik_prepared->execute(array('username' => $username));
+                        $korisnik_mail = $korisnik_prepared->fetch();
 
-                                if($br_komentara[0] == 0)
-                                {
-                                    print '<div class="article"><h1>'.$vijest['naslov'].'</h1>
-                                           <h2><strong>autor : </strong>'.$vijest['autor'].', <strong>Objavljeno : </strong>'.date("d.m.Y. (h:i)", $vijest['vrijeme']).'</h2>
-                                           '.$slika.'<p>'.$vijest['tekst'].'<br><br>';
-                                    echo '<div id="detaljnaVijest'.$vijest['id'].'"></div>';
-                                    echo $detaljno;
-                                    echo ' Nema komentara<br><br></p></div>';
+                        
+                        if ($korisnik_mail == null) 
+                        {
+                          $poruka_greske = "Nepostojeći korisnik";
+                          $username_err_img = '<img src="https://cdn3.iconfinder.com/data/icons/freeapplication/png/24x24/Danger.png" alt="greska" height="15" width="15">';
+                        }
+                        else 
+                        {
+                          $token = randomToken();
+                          $_SESSION['resetPassToken'] = $token;
+                          $usr_mail = $korisnik_mail[0];
+                          $_SESSION['resetUsrMail'] = $usr_mail;
+                          $_SESSION['resetUsrPass'] = $novi_pass;
+                          include('send_token.php');
+                        } 
+                      }
+                                        
+                    }
 
-                                    
-                                }
-                                else
-                                {
-                                   echo '<div class="article"><h1>'.$vijest['naslov'].'</h1>
-                                       <h2><strong>autor : </strong>'.$vijest['autor'].', <strong>Objavljeno : </strong>'.date("d.m.Y. (h:i)", $vijest['vrijeme']).'</h2>
-                                       '.$slika.'<p>'.$vijest['tekst'].'<br><br>';
-                                   echo '<div id="detaljnaVijest'.$vijest['id'].'"></div>';
-                                   echo $detaljno;
-                                   echo '<a href = "javascript:void(0);" onclick="showDiv('.$vijest['id'].')">Ima '.$br_komentara[0].' komentara</a>';
-                                   echo '<br><br></p></div>';
-                                   echo '<div id="vijestBr'.$vijest['id'].'"></div>';    
-                                }
+                    if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
+                    // last request was more than 30 minutes ago
+                    session_unset();     // unset $_SESSION variable for the run-time 
+                    session_destroy();   // destroy session data in storage
+                    $token = "";
+                    }
+                    $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
 
-                                
-                                print   '<form action="index.php" method="post">
-                                              <input type="hidden" id="pk" value="'.$vijest['id'].'">
-                                              <input type="hidden" id="author" value="'.$autor.'">
-                                              <br><textarea rows="5" cols="50" id="komm" placeholder="Komentar"></textarea><br>
-                                              <input type="button" name="addcomm" value="Komentariši" onClick="sendComment(this.form)">
-                                         </form>';  
-                            }
-                        ?>
+                    function randomToken() {
+                        $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+                        $token = array(); 
+                        $alphaLength = strlen($alphabet) - 1;
+                        for ($i = 0; $i < 15; $i++) {
+                            $n = rand(0, $alphaLength);
+                            $token[] = $alphabet[$n];
+                        }
+                        return implode($token); 
+                    }
 
-                    </div>    
-            </div>    
-        </body>
-    </div>
 
-    <!--U footeru se nalaze linkovi u vidu neuređene liste-->
+                    function testiraj_unos($data) 
+                    {
+                      $data = trim($data); // uklanja bespotrebne razmake i prazna polja
+                      $data = stripslashes($data); // uklanja backslahs-ove
+                      $data = htmlspecialchars($data); // sprečava XSS
+                      return $data;
+                    }
+                ?>    
+
+                <div id="resetpassword">
+                  <form action="reset_password.php" method="post">
+                    <input type="text" name="noviPassusr" placeholder="Username"><br><br>
+                    <input type="text" name="noviPass" placeholder="Novi password"><br><br>
+                    <input type="submit" name="resetPass" id="resetPass" value="Reset">
+                  </form>
+                  <br><br>
+                  <label class="error_token"><?php echo $username_err_img;?>&nbsp;&nbsp;<?php echo $poruka_greske; ?></label>
+                </div>
+
+        </div>
+    </body>
+</div>
+
+ <!--U footeru se nalaze linkovi u vidu neuređene liste-->
     <div class="footer">  
         <p id="copyright">© 2023 by AdnaDurakovic</p>
         <ul id="links">

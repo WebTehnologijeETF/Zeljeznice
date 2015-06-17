@@ -1,27 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Željeznice | SoulTrain</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link href='http://fonts.googleapis.com/css?family=Droid+Sans' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Dancing+Script' rel='stylesheet' type='text/css'>
+        <script src="funkcije.js"></script>
+    </head>
+
+    <div class="menu">
+        <a class="logo" href="#" onClick = "funkcijaHome()"><img src="slike/logo.png" alt="Logo">SoulTrain</a>        
+
+          <ul>
+
+            <?php
+              session_start();
+
+              if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1800)) {
+                // last request was more than 30 minutes ago
+                session_unset();     // unset $_SESSION variable for the run-time 
+                session_destroy();   // destroy session data in storage
+                echo "<label class='crvena'>Sesija je istekla!</label>";
+              }
+              $_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+
+              if (isset($_SESSION['username'])) 
+                $username = $_SESSION['username'];
+              else if (isset($_REQUEST['username'])) 
+              {
+                $username = $_REQUEST['username'];
+                $pass = $_REQUEST['password'];
+                $username = htmlentities($username);
+                $pass = htmlentities($pass);
+                        
+                $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
+                $veza->exec("set names utf8");
+                        
+                $sql = "SELECT * FROM admin WHERE username=:user AND password=:pass";
+                $q = $veza->prepare($sql);
+                $q->execute(array(':user'=>$username, ':pass'=>$pass));
+                if($q->rowCount()==1)
+                {
+                  $_SESSION['username'] = $username;
+                  $_SESSION['isadmin'] = $q->fetchColumn(4);
+                }
+                else
+                {
+                  unset($username);
+                  echo "<label class='crvena'>Pogrešan username ili password</label>";
+                }
+
+              }
+            ?>
+          <li><a href="#" onClick = "funkcijaHome()">NASLOVNA</a></li>
+          <li><a href="#" onClick = "funkcijaRoutes()">VOZNI RED</a></li>
+          <li><a href="#" onClick = "funkcijaContact()">KONTAKT</a></li>
+          <li><a href="#" onClick = "funkcijaAbout()">O NAMA</a></li>
+
+          <?php
+          if(isset($_REQUEST['logout']))
+          {
+            session_destroy();
+            unset($username);
+          }
+          if(isset($username) and $username!="")
+          {
+            $autor = $username;
+            
+            echo "<div id='loggedin'>"
+                . "<form method='POST' action='index.php'><label>Ulogovani ste kao: <strong class='zelena'>$username</strong></label>&nbsp;&nbsp;"
+                    . "<input type='submit' id='login_button' name='logout' value='Log Out'>"
+                . "</form></div>";
+
+            
+            if ($_SESSION['isadmin'] == 1)
+              echo '<li id="adminpanel"><a href="#" onClick = "funkcijaAdminPanel()">ADMIN</a><li>';
+
+          }
+          else
+          {
+              $autor = "Anonimac";
+              echo '<div id="login">
+                      <form action="index.php" method="post">
+                        <input id="user_name" name="username" type="text" placeholder="Username">
+                        <input id="user_pass" name="password" type="text" placeholder="Password">
+                        <input type="submit" id="login_button" name="userlogin" value="Log In">
+                      </form>
+                    </div>';
+          }
+
+        ?>
+   
+        </ul>
+
+
+    </div>
+
 <div id = "tijelo">
     <body>   
         <div class="content">  
-            <div id="svi_komentari"></div>
                
                 <?php
                     header('Content-Type: text/html; charset=utf-8');
-                    echo '<div id="svi_komentari"></div>';
-                    echo '<div id="sve_vijesti"></div>';
-                    echo '<div id="svi_korisnici"></div>';
-                    echo '<div id="adminpanelopen">
-                          <form><input type="submit" value="Otvori admin panel" onclick="showAdminAll()">
-                          </form><br><br>
-                          <div id="resetpassword">
-                          <form>
-                          <br><br>
-                          <input type="text" name="noviPass" placeholder="Novi password"><br><br> 
-                          <input id="resetPass" type="submit" value="Resetuj password" onclick="resetujPassword(this.form)">
-                          </form></div>
-                          <br><br>
-                          </div>';
 
-
-                    /*
                     try 
                     {
                         $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
@@ -57,7 +141,7 @@
                                         <img class = "article-pic" src="getImage.php?id='.$vijest['id'].'" alt="nema slike"><br>
                                         <small>'.$vijest['tekst'].'</small><br> 
                                         <small>'.$vijest['detaljno'].'</small><br><br>  
-                                        <form id="formica" action="admin_login_OK_.php" method="post">
+                                        <form id="formica" action="admin_panel.php" method="post">
                                             <input type="hidden" name="pk" value="'.$vijest['id'].'">
                                             <button id="batnObrisi" type="submit" name="buttonObrisiVijest">Obriši</button><br><br>
                                             <input type="text" name="aut" placeholder="Autor">
@@ -75,7 +159,7 @@
 
                     $forma_za_dodavanje_vijesti = '<div id="kom">
                                                 <strong>Dodaj novu vijest</strong><br><br>
-                                                <form id="formica" action="admin_login_OK_.php" method="post">
+                                                <form id="formica" action="admin_panel.php" method="post">
                                                     <input type="hidden" name="pk" value="'.$vijest['id'].'">
                                                     <input type="text" name="aut" placeholder="Autor">
                                                     <input type="text" name="nasl" placeholder="Naslov"><br><br>
@@ -96,7 +180,7 @@
                         $rez = $veza->prepare("DELETE FROM vijest WHERE id = :pk");
                         $rez->execute(array(':pk' => $pk));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST*/
                     }
 
                     if(isset( $_POST['buttonIzmijeniVijest']))
@@ -115,7 +199,7 @@
                                             ':detalji' => $detaljnije,
                                             ));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST
                     }
 
                     if(isset( $_POST['buttonDodajVijest']))
@@ -134,7 +218,7 @@
                                             ':detalji' => $detaljnije,
                                             ));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST
                     }
 
                     // KOMENTARI
@@ -144,7 +228,7 @@
                                         <small id="kom_datum">'.$komentar['datum'].'</small><br><br>
                                         <small>'.$komentar['tekst'].'</small><br><br>    
                                     </div><br>
-                                    <form action="admin_login_OK_.php" method="post">
+                                    <form action="admin_panel.php" method="post">
                                         <input type="hidden" name="pk" value="'.$komentar['id'].'">
                                         <button id="batnObrisi" type="submit" name="buttonObrisiKom">Obriši</button>
                                     </form>
@@ -155,18 +239,18 @@
 
                     if(isset( $_POST['buttonObrisiKom']))
                     {
-                        
+                        /*
                         echo '<script language="javascript">';
                         echo 'alert("message successfully sent")';
                         echo '</script>';
-                        
+                        */
 
                         $pk = $_POST['pk'];
 
                         $rez = $veza->prepare("DELETE FROM komentar WHERE id = :pk");
                         $rez->execute(array(':pk' => $pk));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST
                     }
 
                     // KORISNICI
@@ -176,7 +260,7 @@
                                         <strong>Password: '.$admin['password'].'</strong><br><br>
                                         <small>Email: '.$admin['email'].'</small><br><br>    
                                     
-                                    <form action="admin_login_OK_.php" method="post">
+                                    <form action="admin_panel.php" method="post">
                                         <input type="hidden" name="pk" value="'.$admin['id'].'">
                                         <button id="batnObrisi" type="submit" name="buttonObrisiKor">Obriši</button><br>
                                         <input type="text" name="usr" placeholder="Username"><br><br>
@@ -192,7 +276,7 @@
 
                     $forma_za_dodavanje_kor = '<div id="kom">
                                                 <strong>Dodajte novog korisnika</strong><br><br>
-                                                <form action="admin_login_OK_.php" method="post">
+                                                <form action="admin_panel.php" method="post">
                                                     <input type="hidden" name="pk" value="'.$admin['id'].'">
                                                     <input type="text" name="usr" placeholder="Username"><br><br>
                                                     <input type="text" name="eml" placeholder="Email"><br><br>
@@ -216,7 +300,7 @@
                                             ':mail' => $usr_mail
                                             ));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST
                     }
 
                     if(isset( $_POST['buttonIzmijeniKor']))
@@ -233,7 +317,7 @@
                                             ':mail' => $usr_mail
                                             ));
 
-                        header('Location: admin_login_OK_.php'); // očisti POST
+                        header('Location: admin_panel.php'); // očisti POST
                     }
 
                     if(isset($_POST['buttonObrisiKor']))
@@ -253,7 +337,7 @@
                         {
                             $rez = $veza->prepare("DELETE FROM admin WHERE id = :pk");
                             $rez->execute(array(':pk' => $pk));
-                            header('Location: admin_login_OK_.php'); // očisti POST
+                            header('Location: admin_panel.php'); // očisti POST*/
                         }
 
 
@@ -262,7 +346,7 @@
 
 
                     // ISPIS
-                    $bb ='<div>
+                    echo '<div>
                             <fieldset id="komentar_fs">
                                 <legend>Komentari</legend>
                                 '.implode('',$svi_komentari).'
@@ -278,14 +362,22 @@
                                 '.implode('',$sve_vijesti).'
                             </fieldset>
                         </div>';
-
-                 $bla=$bb;
-                 */
-
-                ?>           
+            ?>
 
         </div>
     </body>
 </div>
+
+<!--U footeru se nalaze linkovi u vidu neuređene liste-->
+    <div class="footer">  
+        <p id="copyright">© 2023 by AdnaDurakovic</p>
+        <ul id="links">
+            <li><a href="https://www.facebook.com/"><img src="slike/facebook.png" height="30px" width="30px" alt="Facebook"></a></li>
+            <li><a href="https://www.twitter.com/"><img src="slike/twitter.png" height="30px" width="30px" alt="Twitter"></a></li>
+            <li><a href="https://www.instagram.com/"><img src="slike/instagram.png" height="30px" width="30px" alt="Instagram"></a></li>
+        </ul>
+    </div>
+
+</html>
 
 <!-- kraj HTMLa -->

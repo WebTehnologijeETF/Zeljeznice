@@ -1,16 +1,12 @@
 <?php
-   session_start();
-
-	$new_pass = $_POST['token'];
-  	$usr_mail = $_POST['userEmail'];
 
 	require "Mail/Mail.php";
    // Identify the sender, recipient, mail subject, and body
    $sender    = "sender@gmail.com";
    $recipient = $usr_mail;
-   $addCc = "adurakovic4@etf.unsa.ba";
    $subject   = "Token for Password Reset";
    $body      = $token;
+
  
    // Identify the mail server, username, password, and port
    $server   = "ssl://smtp.gmail.com";
@@ -35,15 +31,21 @@
         "port"     => 465
       )
    );
+  
  
    // Send the message
    $mail = $smtp->send($recipient, $headers, $body);
   
    if (PEAR::isError($mail)) {
     echo ($mail->getMessage());
+    
    }
    else
    {
+      echo '<script>alert("Token je poslan na Vaš email.")</script>';
+      header( 'refresh: 0; insert_token.php' );
    }
+   
+
 
 ?>

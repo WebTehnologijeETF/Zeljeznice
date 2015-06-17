@@ -1,5 +1,4 @@
-<!-- HTML dio koda -->
- <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
 <html>
     <head>
@@ -12,7 +11,7 @@
         <script src="funkcije.js"></script>
     </head>
 
-<div class="menu">
+    <div class="menu">
         <a class="logo" href="#" onClick = "funkcijaHome()"><img src="slike/logo.png" alt="Logo">SoulTrain</a>        
 
           <ul>
@@ -52,7 +51,9 @@
                 {
                   unset($username);
                   echo "<label class='crvena'>Pogrešan username ili password</label>";
+                  echo "<a class='resetpass' href='reset_password.php'>Resetuj password?</a>";
                 }
+
 
               }
             ?>
@@ -100,47 +101,93 @@
 
     </div>
 
-    <?php 
-        include 'contact_validation.php'
-    ?>
-
-    <div id = "tijelo">
+<div id = "tijelo">
     <body>   
         <div class="content">  
-            <p>Kontakt</p>
-            
-            <div class="address">
-                <h1>Adresa</h1>
-                <h2>San Guadalupe Office<br>
-                    SoulTrain<br>
-                    500 Terry Francois St.<br>
-                    San Guadalupe, CA 88541</h2>
-                <img src="slike/mapa.jpg" alt="Mapa">
-            </div>
+               
 
-            <div class="telephone">
-                <h1>Telefon</h1>
-                <h2>061 000 008</h2>
-                <br>
-                
-                <?php 
-                    include $show_form;
-                ?>             
+                <?php
+                    function testiraj_unos($data) 
+                    {
+                      $data = trim($data); // uklanja bespotrebne razmake i prazna polja
+                      $data = stripslashes($data); // uklanja backslahs-ove
+                      $data = htmlspecialchars($data); // sprečava XSS
+                      return $data;
+                    }
+                ?>    
 
-            </div>
+
+
+                <?php
+                    if(isset($_POST["confirmToken"]))
+                    {
+                      $uneseniToken = testiraj_unos($_POST["inputToken"]);
+
+                      if($uneseniToken == $_SESSION['resetPassToken'])
+                      {
+                        $poruka_greske = $username_err_img = "";
+                        try 
+                        {
+                          $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
+                          $veza->exec("set names utf8");
+                        }
+                        catch (PDOException $ex)
+                        {
+                          die('Greška kod povezivanja s bazom');
+                        }
+
+                        $usermail = $_SESSION['resetUsrMail'];
+                        $newpass = $_SESSION['resetUsrPass'];
+
+                        $update_pass_prepared = $veza->prepare("UPDATE admin SET password = :newpass WHERE email = :usermail");
+                        $update_pass_prepared->execute(array(':newpass'=> $newpass,
+                                                             ':usermail'=> $usermail
+                                                            ));
+                        
+                        echo '<script>alert("Password je uspješno promijenjen!")</script>';
+                        session_unset();
+                        session_destroy();
+                        header( 'refresh: 0; index.php' );
+                      }
+                      else
+                      {
+                        if($_SESSION['resetPassToken'] == "")
+                        {
+                          $poruka_greske = "Sesija je istekla";
+                          $username_err_img = '<img src="https://cdn3.iconfinder.com/data/icons/freeapplication/png/24x24/Danger.png" alt="greska" height="15" width="15">';
+                        }
+                        else
+                        {
+                          $poruka_greske = "Neispravan token";
+                          $username_err_img = '<img src="https://cdn3.iconfinder.com/data/icons/freeapplication/png/24x24/Danger.png" alt="greska" height="15" width="15">';
+                        }
+                          
+                      }
+
+                    }  
+                ?>
+
+                <div id="resetpassword">
+                  <form action="insert_token.php" method="post">
+                    <input type="text" name="inputToken" placeholder="Token"><br><br>
+                    <input type="submit" name="confirmToken" id="resetPass" value="Potvrdi">
+                  </form>
+                  <br><br>
+                  <label class="error_token"><?php echo $username_err_img;?>&nbsp;&nbsp;<?php echo $poruka_greske; ?></label>
+                </div>
+
         </div>
     </body>
 </div>
 
+ <!--U footeru se nalaze linkovi u vidu neuređene liste-->
+    <div class="footer">  
+        <p id="copyright">© 2023 by AdnaDurakovic</p>
+        <ul id="links">
+            <li><a href="https://www.facebook.com/"><img src="slike/facebook.png" height="30px" width="30px" alt="Facebook"></a></li>
+            <li><a href="https://www.twitter.com/"><img src="slike/twitter.png" height="30px" width="30px" alt="Twitter"></a></li>
+            <li><a href="https://www.instagram.com/"><img src="slike/instagram.png" height="30px" width="30px" alt="Instagram"></a></li>
+        </ul>
+    </div>
 
-<div class="footer">  
-    <p id="copyright">© 2023 by AdnaDurakovic</p>
-    <ul id="links">
-        <li><a href="https://www.facebook.com/"><img src="slike/facebook.png" height="30px" width="30px" alt="Facebook"></a></li>
-        <li><a href="https://www.twitter.com/"><img src="slike/twitter.png" height="30px" width="30px" alt="Twitter"></a></li>
-        <li><a href="https://www.instagram.com/"><img src="slike/instagram.png" height="30px" width="30px" alt="Instagram"></a></li>
-    </ul>
-</div> 
-   
 </html>
-<!-- kraj HTMLa -->
