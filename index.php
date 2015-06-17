@@ -111,7 +111,7 @@
                         <?php
                             header('Content-Type: text/html; charset=utf-8');
 
-                            $veza = new PDO("mysql:dbname=zeljeznicesoultrain;host=127.6.189.2;charset=utf8", "adminnlc33pY", "RHuwlgvvVQat");
+                            $veza = new PDO("mysql:dbname=tut9;host=localhost;charset=utf8", "root", "root");
                             $veza->exec("set names utf8");
                              
                               $rezultat = $veza->query("SELECT id, naslov, autor, slika, tekst, UNIX_TIMESTAMP(datum) vrijeme, detaljno FROM vijest ORDER BY datum DESC");
